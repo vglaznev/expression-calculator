@@ -1,14 +1,36 @@
 package reversepolishnotation.tokenizer;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+
+/**
+ * Utility class that provides methods for splitting expressions into tokens and determining numerical operands, supported operators, brackets
+ */
 public class ExpressionTokenizer {
-    private static final String regexSplit = "(?<=[()+*/-^])|(?=[()+*/-^])";
+    /**
+     * Regular-expression for splitting expressions
+     */
+    private static final String regexSplit = "(?<=[-+*/^() ])|(?=[-+*/^() ])";
+    /**
+     * Regular-expression for determining number
+     */
     private static final Pattern numberPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+    /**
+     * Set for determining operators
+     */
+    private static final Set<String> operators = Set.of("+", "-", "/", "*", "^");
+    /**
+     * Set for determining brackets
+     */
+    private static final Set<String> brackets = Set.of("(", ")");
 
+    /**
+     * Checks if string represents a number
+     * @param number string representations of number
+     * @return true if input string represents a number; false otherwise
+     */
     public static boolean isNumeric(String number) {
         if (number == null) {
             return false;
@@ -16,30 +38,43 @@ public class ExpressionTokenizer {
         return numberPattern.matcher(number).matches();
     }
 
-    private static void compressUnaryMinus(List<String> tokenizedExpression, int index) {
-        tokenizedExpression.set(index + 1, "-" + tokenizedExpression.get(index + 1));
-        tokenizedExpression.remove(index);
+    /**
+     * Checks if string represents an operator
+     * @param operation string representations an operator
+     * @return true if input string represents an operator; false otherwise
+     */
+    public static boolean isOperator(String operation){
+        if (operation == null) {
+            return false;
+        }
+        return operators.contains(operation);
     }
 
-    private static List<String> associateUnaryMinus(List<String> tokenizedExpression) {
-        if (tokenizedExpression.size() >= 2 && tokenizedExpression.get(0).equals("-") && isNumeric(tokenizedExpression.get(1))) {
-            compressUnaryMinus(tokenizedExpression, 0);
+    /**
+     * Checks if string represents a bracket
+     * @param bracket string representations a bracket
+     * @return true if input string represents a bracket; false otherwise
+     */
+    public static boolean isBracket(String bracket){
+        if (bracket == null) {
+            return false;
         }
-        for (int i = 0; i < tokenizedExpression.size() - 2; i++) {
-            if (tokenizedExpression.get(i).equals("(") && tokenizedExpression.get(i + 1).equals("-") && ExpressionTokenizer.isNumeric(tokenizedExpression.get(i + 2))) {
-                compressUnaryMinus(tokenizedExpression, i + 1);
-                i++;
-            }
-        }
-        return tokenizedExpression;
+        return brackets.contains(bracket);
     }
 
-    public static List<String> tokenizeExpression(String expression) {
-        return ExpressionTokenizer.associateUnaryMinus(
-                Arrays.stream(expression
-                                .replaceAll("\\s+", "")
-                                .split(regexSplit))
-                        .collect(Collectors.toList())
-        );
+    /**
+     * Split expression into numerical operands, supported operators, brackets\
+     * @throws IllegalArgumentException if expression is null
+     * @param expression expression to be split
+     * @return array of tokens
+     */
+    public static String[] tokenizeExpression(String expression) {
+        if(expression == null){
+            throw new IllegalArgumentException("Expression is null");
+        }
+        return Arrays.stream(expression.replaceAll("\\s+", " ").split(regexSplit))
+                .filter(x -> !x.equals(" "))
+                .toArray(String[]::new);
     }
+
 }

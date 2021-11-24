@@ -4,24 +4,36 @@ import reversepolishnotation.converter.ExpressionConverter;
 import reversepolishnotation.converter.ExpressionConverterImp;
 import reversepolishnotation.tokenizer.ExpressionTokenizer;
 
-import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 
+/**
+ * Class that provides method for calculating expression.
+ * Implements ExpressionCalculator interface
+ */
 public class ExpressionCalculatorImp implements ExpressionCalculator {
-    private static final Set<String> operations = Set.of("+", "-", "/", "*", "^");
+    /**
+     * Converter from infix-notation expression to reverse polish notation
+     */
     private ExpressionConverter expressionConverter;
 
+    /**
+     * Creates new expression calculator
+     */
     public ExpressionCalculatorImp() {
         expressionConverter = new ExpressionConverterImp();
     }
 
+    /**
+     * Calculates value of the expression
+     * @param expression expression to be calculated
+     * @return value of the expression
+     */
     public double calculateExpression(String expression) {
         String polishNotationExpression = expressionConverter.convertToReversePolishNotation(expression);
-        List<String> tokenizedExpression = ExpressionTokenizer.tokenizeExpression(polishNotationExpression);
+        String[] tokenizedExpression = polishNotationExpression.split(" ");
         Stack<Double> stack = new Stack<>();
         for (String token : tokenizedExpression) {
-            if (!operations.contains(token)) {
+            if (!ExpressionTokenizer.isOperator(token)) {
                 Double operand = Double.parseDouble(token);
                 stack.push(operand);
             } else {
